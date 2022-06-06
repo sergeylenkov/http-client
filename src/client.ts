@@ -19,8 +19,8 @@ export class HttpClient {
   private _url: string;
   private _headers: Dictionary<string>;
 
-  constructor(url: string) {
-    this._url = url;
+  constructor(url?: string) {
+    this._url = url || '';
     this._headers = {};
   }
 

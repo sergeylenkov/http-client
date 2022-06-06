@@ -48,44 +48,56 @@ export function Param(name: string): ParameterDecorator {
     propertyKey: string | symbol,
     parameterIndex: number
   ) => {
-    const keys: Dictionary<number> = {};
+    const paths: Dictionary<number> = Reflect.getOwnMetadata(
+      PATH_PARAM_META_DATA,
+      target,
+      propertyKey
+    ) || {};
 
-    keys[name] = parameterIndex;
+    paths[name] = parameterIndex;
 
-    Reflect.defineMetadata(PATH_PARAM_META_DATA, keys, target, propertyKey);
+    Reflect.defineMetadata(PATH_PARAM_META_DATA, paths, target, propertyKey);
   };
 }
 
 export function Get(path: string): MethodDecorator {
   return (
     target: any,
-    property: string | symbol,
+    propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>
   ) => {
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
-      const parameterIndex: number = Reflect.getOwnMetadata(
+      const reponseIndex: number = Reflect.getOwnMetadata(
         RESPONSE_META_DATA,
         target,
-        property
+        propertyKey
       );
 
       const responseType: ResponseType = Reflect.getOwnMetadata(
         RESPONSE_TYPE_META_DATA,
         target,
-        property
+        propertyKey
       );
 
 
       const paths: Dictionary<number> = Reflect.getOwnMetadata(
         PATH_PARAM_META_DATA,
         target,
-        property
+        propertyKey
       );
-      console.log('Get', paths, parameterIndex);
+
+      for (const key in paths) {
+        const index = paths[key];
+        const value = args[index];
+        const param = `:${key}`;
+
+        path = path.replace(param, value);
+      }
+
       const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
-      console.log(client, path);
+
       const response = await client.get(path);
       let data;
 
@@ -95,8 +107,8 @@ export function Get(path: string): MethodDecorator {
         data = await response.text();
       }
 
-      if (parameterIndex >= 0) {
-        args.splice(parameterIndex, 1, data);
+      if (reponseIndex >= 0) {
+        args.splice(reponseIndex, 1, data);
       }
 
       return method.apply(target, args);
