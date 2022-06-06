@@ -1,7 +1,7 @@
 {
-  "name": "json-serializer",
+  "name": "http-client",
   "version": "0.1",
-  "description": "Typescript JSON serializer based on decorators",
+  "description": "TypesScript http client based on decorators",
   "main": "build/lib/index.js",
   "module": "build/lib/index.js",
   "types": "build/lib/index.d.ts",

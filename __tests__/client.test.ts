@@ -9,7 +9,7 @@ interface User {
 }
 
 @Http('https://gorest.co.in/public/v2')
-class API extends HttpClient {
+class API {
   @Get('users')
   public async getUsers(@Response(ResponseType.Json) response?: JSONObject): Promise<User[]> {
     return response as unknown as User[];
