@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "esnext",
+    "allowJs": true,
+    "sourceMap": true,
+    "outDir": "./build/lib",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitAny": true,
+    "declaration": true,
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "rootDirs": ["src"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+  },
+  "include": ["src/**/**/*"]
+}
