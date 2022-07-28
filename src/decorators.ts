@@ -140,3 +140,27 @@ export function Post(path: string): MethodDecorator {
     };
   };
 }
+
+export function Delete(path: string): MethodDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<any>
+  ) => {
+    const method = descriptor.value;
+
+    descriptor.value = async (...args: any[]) => {
+      const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
+
+      addHeadersToClient(client, target);
+      path = addParamsToPath(path, args, target, propertyKey);
+
+      const response = await client.delete(path);
+      const data = await getDataFromResponse(response, target, propertyKey);
+
+      args = appendResponseToArgs(data, args, target, propertyKey);
+
+      return method.apply(target, args);
+    };
+  };
+}

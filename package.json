@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "build": "rollup -c ./rollup.config.js",
-    "test": "jest --config ./jest.config.js --coverage=false"
+    "test": "jest --config ./jest.config.js --coverage=false -i"
   },
   "repository": {
     "type": "git",

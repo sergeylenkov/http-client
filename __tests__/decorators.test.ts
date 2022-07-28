@@ -12,17 +12,19 @@ class TestClass {
 
 }
 
-test('Http', () => {
-  const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
+describe('Decorators', () => {
+  test('Http', () => {
+    const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
 
-  expect(client).toBeDefined();
-});
+    expect(client).toBeDefined();
+  });
 
-test('Header', () => {
-  const testClass = new TestClass();
+  test('Header', () => {
+    const testClass = new TestClass();
 
-  const header = Reflect.getMetadata(HEADER_META_DATA, testClass);
+    const header = Reflect.getMetadata(HEADER_META_DATA, testClass);
 
-  expect(header.has(HttpHeader.Authorization)).toBe(true);
-  expect(header.get(HttpHeader.Authorization)).toBe('test');
+    expect(header.has(HttpHeader.Authorization)).toBe(true);
+    expect(header.get(HttpHeader.Authorization)).toBe('test');
+  });
 });
