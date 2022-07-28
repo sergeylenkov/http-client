@@ -71,7 +71,7 @@ describe('API Client', () => {
 
   test('Delete by id', async () => {
     expect(userId).toBeDefined();
-    console.log(userId);
+
     const id = await api.deleteUser(userId);
     expect(id).toBe(userId);
   });
