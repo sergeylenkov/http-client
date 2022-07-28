@@ -77,7 +77,7 @@ export function Header(key: string, value: string): ClassDecorator {
   return (constructor: any) => {
     const headers: Map<string, string> = Reflect.getOwnMetadata(
       HEADER_META_DATA,
-      constructor
+      constructor.prototype
     ) || new Map();
 
     headers.set(key, value);

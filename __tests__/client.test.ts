@@ -3,7 +3,7 @@ import { HttpHeader } from '../src/headers';
 import { JSONObject, HttpResponseType } from '../src/types';
 
 const token = process.env.TEST_API_TOKEN;
-console.log(process.env.TEST_API_TOKEN);
+
 interface User {
   id?: number;
   name: string;
@@ -52,8 +52,8 @@ test('Get with params', async () => {
 });
 
 test('Post', async () => {
-    const user = await api.createUser(newUser);
+  const user = await api.createUser(newUser);
 
-    expect(user.id).toBeGreaterThan(1);
-    expect(user.name).toBe(newUser.name);
+  expect(user.id).toBeGreaterThan(1);
+  expect(user.name).toBe(newUser.name);
 });
