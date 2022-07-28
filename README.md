@@ -30,3 +30,5 @@ const api = new API();
 const users = await api.getUsers();
 const user = await api.getUser(9);
 ```
+
+See tests for more examples

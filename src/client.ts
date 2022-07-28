@@ -17,23 +17,19 @@ import fetch, { RequestInit, Response, HeadersInit } from 'node-fetch';
 
 export class HttpClient {
   private _url: string;
-  private _headers: Dictionary<string>;
+  private _headers: Map<string, string>;
 
   constructor(url: string) {
     this._url = url;
-    this._headers = {};
+    this._headers = new Map();
   }
 
-  public setContentType(contentType: string): void {
-    this._headers['Content-Type'] = contentType;
-  }
-
-  public setCustomHeader(key: string, value: string): void {
-    this._headers[key] = value;
+  public setHeader(key: string, value: string): void {
+    this._headers.set(key, value);
   }
 
   private getHeaders(): HeadersInit {
-    return this._headers;
+    return Object.fromEntries(this._headers);
   }
 
   private async request(url: string, request: RequestInit): Promise<Response> {

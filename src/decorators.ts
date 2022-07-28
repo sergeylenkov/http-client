@@ -1,17 +1,15 @@
 import 'reflect-metadata';
 import { HttpClient } from './client';
 import {
+  BODY_META_DATA,
+  HEADER_META_DATA,
   HTTP_CLIENT_META_DATA,
   PATH_PARAM_META_DATA,
   RESPONSE_META_DATA,
   RESPONSE_TYPE_META_DATA,
 } from './constants';
-import { Dictionary } from './types';
-
-export const enum ResponseType {
-  Json,
-  Text
-}
+import { HttpResponseType } from './types';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse } from './utils';
 
 export function Http(url: string): ClassDecorator {
   return (constructor: any) => {
@@ -20,7 +18,7 @@ export function Http(url: string): ClassDecorator {
   };
 }
 
-export function Response(type?: ResponseType ): ParameterDecorator {
+export function Response(type?: HttpResponseType ): ParameterDecorator {
   return (
     target: any,
     propertyKey: string | symbol,
@@ -48,15 +46,43 @@ export function Param(name: string): ParameterDecorator {
     propertyKey: string | symbol,
     parameterIndex: number
   ) => {
-    const paths: Dictionary<number> = Reflect.getOwnMetadata(
+    const params: Map<string, number> = Reflect.getOwnMetadata(
       PATH_PARAM_META_DATA,
       target,
       propertyKey
-    ) || {};
+    ) || new Map();
 
-    paths[name] = parameterIndex;
+    params.set(name, parameterIndex);
 
-    Reflect.defineMetadata(PATH_PARAM_META_DATA, paths, target, propertyKey);
+    Reflect.defineMetadata(PATH_PARAM_META_DATA, params, target, propertyKey);
+  };
+}
+
+export function Body(): ParameterDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    parameterIndex: number
+  ) => {
+    Reflect.defineMetadata(
+      BODY_META_DATA,
+      parameterIndex,
+      target,
+      propertyKey
+    );
+  };
+}
+
+export function Header(key: string, value: string): ClassDecorator {
+  return (constructor: any) => {
+    const headers: Map<string, string> = Reflect.getOwnMetadata(
+      HEADER_META_DATA,
+      constructor
+    ) || new Map();
+
+    headers.set(key, value);
+
+    Reflect.defineMetadata(HEADER_META_DATA, headers, constructor.prototype);
   };
 }
 
@@ -69,47 +95,46 @@ export function Get(path: string): MethodDecorator {
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
-      const reponseIndex: number = Reflect.getOwnMetadata(
-        RESPONSE_META_DATA,
-        target,
-        propertyKey
-      );
-
-      const responseType: ResponseType = Reflect.getOwnMetadata(
-        RESPONSE_TYPE_META_DATA,
-        target,
-        propertyKey
-      );
-
-
-      const paths: Dictionary<number> = Reflect.getOwnMetadata(
-        PATH_PARAM_META_DATA,
-        target,
-        propertyKey
-      );
-
-      for (const key in paths) {
-        const index = paths[key];
-        const value = args[index];
-        const param = `:${key}`;
-
-        path = path.replace(param, value);
-      }
-
       const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
 
+      addHeadersToClient(client, target);
+      path = addParamsToPath(path, args, target, propertyKey);
+
       const response = await client.get(path);
-      let data;
+      const data = await getDataFromResponse(response, target, propertyKey);
 
-      if (responseType === ResponseType.Json) {
-        data = await response.json();
-      } else if (responseType === ResponseType.Text) {
-        data = await response.text();
-      }
+      args = appendResponseToArgs(data, args, target, propertyKey);
 
-      if (reponseIndex >= 0) {
-        args.splice(reponseIndex, 1, data);
-      }
+      return method.apply(target, args);
+    };
+  };
+}
+
+export function Post(path: string): MethodDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<any>
+  ) => {
+    const method = descriptor.value;
+
+    descriptor.value = async (...args: any[]) => {
+      const bodyIndex: number = Reflect.getOwnMetadata(
+        BODY_META_DATA,
+        target,
+        propertyKey
+      );
+
+      const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
+      const body = args[bodyIndex];
+
+      addHeadersToClient(client, target);
+      path = addParamsToPath(path, args, target, propertyKey);
+
+      const response = await client.post(path, body);
+      const data = await getDataFromResponse(response, target, propertyKey);
+
+      args = appendResponseToArgs(data, args, target, propertyKey);
 
       return method.apply(target, args);
     };
