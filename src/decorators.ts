@@ -9,7 +9,7 @@ import {
   RESPONSE_TYPE_META_DATA,
 } from './constants';
 import { HttpResponseType } from './types';
-import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse } from './utils';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam } from './utils';
 
 export function Http(url: string): ClassDecorator {
   return (constructor: any) => {
@@ -119,19 +119,38 @@ export function Post(path: string): MethodDecorator {
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
-      const bodyIndex: number = Reflect.getOwnMetadata(
-        BODY_META_DATA,
-        target,
-        propertyKey
-      );
-
       const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
-      const body = args[bodyIndex];
+      const body = getBodyParam(args, target, propertyKey);
 
       addHeadersToClient(client, target);
       path = addParamsToPath(path, args, target, propertyKey);
 
       const response = await client.post(path, body);
+      const data = await getDataFromResponse(response, target, propertyKey);
+
+      args = appendResponseToArgs(data, args, target, propertyKey);
+
+      return method.apply(target, args);
+    };
+  };
+}
+
+export function Patch(path: string): MethodDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<any>
+  ) => {
+    const method = descriptor.value;
+
+    descriptor.value = async (...args: any[]) => {
+      const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
+      const body = getBodyParam(args, target, propertyKey);
+
+      addHeadersToClient(client, target);
+      path = addParamsToPath(path, args, target, propertyKey);
+
+      const response = await client.patch(path, body);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);

@@ -1,5 +1,5 @@
 import { HttpClient } from './client';
-import { HEADER_META_DATA, PATH_PARAM_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
+import { BODY_META_DATA, HEADER_META_DATA, PATH_PARAM_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
 import { HttpResponseType } from './types';
 
 export function addHeadersToClient(client: HttpClient, target: any) {
@@ -56,4 +56,14 @@ export async function getDataFromResponse(response: Response, target: any, prope
   }
 
   return data;
+}
+
+export function getBodyParam(args: any[], target: any, propertyKey: string | symbol): any {
+  const bodyIndex: number = Reflect.getOwnMetadata(
+    BODY_META_DATA,
+    target,
+    propertyKey
+  );
+
+  return args[bodyIndex];
 }

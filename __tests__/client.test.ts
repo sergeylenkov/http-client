@@ -1,4 +1,4 @@
-import { Get, Post, Http, Param, Response, Body, Header, Delete } from '../src/decorators';
+import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import { JSONObject, HttpResponseType } from '../src/types';
 
@@ -38,6 +38,11 @@ class API {
     return response as unknown as User;
   }
 
+  @Patch('users/:id')
+  public async changeUser(@Param('id') id?: number, @Body() user?: User, @Response(HttpResponseType.Json) response?: JSONObject): Promise<User> {
+    return response as unknown as User;
+  }
+
   @Delete('users/:id')
   public async deleteUser(@Param('id') id?: number): Promise<number | undefined> {
     return id;
@@ -45,7 +50,7 @@ class API {
 }
 
 const api = new API();
-let userId: number | undefined;
+let testUser: User | undefined;
 
 describe('API Client', () => {
   test('Get', async () => {
@@ -56,23 +61,38 @@ describe('API Client', () => {
   test('Post', async () => {
     const user = await api.createUser(newUser);
 
-    userId = user.id;
+    testUser = user;
 
     expect(user.id).toBeGreaterThan(1);
     expect(user.name).toBe(newUser.name);
   });
 
   test('Get by id', async () => {
-    expect(userId).toBeDefined();
+    expect(testUser).toBeDefined();
 
-    const user = await api.getUser(userId);
-    expect(user.id).toBe(userId);
+    if (testUser) {
+      const user = await api.getUser(testUser.id);
+      expect(user.id).toBe(testUser.id);
+    }
+  });
+
+  test('Patch by id', async () => {
+    expect(testUser?.id).toBeDefined();
+
+    if (testUser) {
+      testUser.gender = 'female';
+
+      const user = await api.changeUser(testUser.id, testUser);
+      expect(user.gender).toBe(testUser.gender);
+    }
   });
 
   test('Delete by id', async () => {
-    expect(userId).toBeDefined();
+    expect(testUser).toBeDefined();
 
-    const id = await api.deleteUser(userId);
-    expect(id).toBe(userId);
+    if (testUser) {
+      const id = await api.deleteUser(testUser.id);
+      expect(id).toBe(testUser.id);
+    }
   });
 })
