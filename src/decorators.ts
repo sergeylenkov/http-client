@@ -5,6 +5,7 @@ import {
   HEADER_META_DATA,
   HTTP_CLIENT_META_DATA,
   PATH_PARAM_META_DATA,
+  QUERY_META_DATA,
   RESPONSE_META_DATA,
   RESPONSE_TYPE_META_DATA,
 } from './constants';
@@ -83,6 +84,21 @@ export function Header(key: string, value: string): ClassDecorator {
     headers.set(key, value);
 
     Reflect.defineMetadata(HEADER_META_DATA, headers, constructor.prototype);
+  };
+}
+
+export function Query(): ParameterDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    parameterIndex: number
+  ) => {
+    Reflect.defineMetadata(
+      QUERY_META_DATA,
+      parameterIndex,
+      target,
+      propertyKey
+    );
   };
 }
 

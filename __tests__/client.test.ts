@@ -1,4 +1,4 @@
-import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch } from '../src/decorators';
+import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import { JSONObject, HttpResponseType } from '../src/types';
 
@@ -25,6 +25,11 @@ const newUser: User = {
 class API {
   @Get('users')
   public async getUsers(@Response(HttpResponseType.Json) response?: JSONObject): Promise<User[]> {
+    return response as unknown as User[];
+  }
+
+  @Get('users')
+  public async getUsersByPage(@Query() query?: JSONObject | string, @Response(HttpResponseType.Json) response?: JSONObject): Promise<User[]> {
     return response as unknown as User[];
   }
 
@@ -55,6 +60,16 @@ let testUser: User | undefined;
 describe('API Client', () => {
   test('Get', async () => {
     const users = await api.getUsers();
+    expect(users.length).toBeGreaterThan(1);
+  });
+
+  test('Get with query as string', async () => {
+    const users = await api.getUsersByPage('page=1');
+    expect(users.length).toBeGreaterThan(1);
+  });
+
+  test('Get with query as object', async () => {
+    const users = await api.getUsersByPage({ page: 1 });
     expect(users.length).toBeGreaterThan(1);
   });
 

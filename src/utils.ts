@@ -1,5 +1,5 @@
 import { HttpClient } from './client';
-import { BODY_META_DATA, HEADER_META_DATA, PATH_PARAM_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
+import { BODY_META_DATA, HEADER_META_DATA, PATH_PARAM_META_DATA, QUERY_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
 import { HttpResponseType } from './types';
 
 export function addHeadersToClient(client: HttpClient, target: any) {
@@ -66,4 +66,28 @@ export function getBodyParam(args: any[], target: any, propertyKey: string | sym
   );
 
   return args[bodyIndex];
+}
+
+export function addQueryToPath(path: string, args: any[], target: any, propertyKey: string | symbol): string {
+  const queryIndex: number = Reflect.getOwnMetadata(
+    QUERY_META_DATA,
+    target,
+    propertyKey
+  );
+
+  const query = args[queryIndex];
+
+  if (typeof query === 'object') {
+    let queryString = '';
+
+    Object.keys(query).forEach((key) => {
+      queryString = queryString + `${key}=${query[key]}&`;
+    })
+
+    queryString = queryString.slice(0, -1);
+
+    return `${path}?${queryString}`;
+  }
+
+  return`${path}?${query}`;
 }
