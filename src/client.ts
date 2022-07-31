@@ -12,8 +12,11 @@ import {
   HttpAuthorizationException,
   HttpException,
 } from './exceptions';
-import { Dictionary } from './types';
-import fetch, { RequestInit, Response, HeadersInit } from 'node-fetch';
+import { Dictionary, JSONObject } from './types';
+import fetch, { RequestInit, Response, HeadersInit, BodyInit } from 'node-fetch';
+import FormData from 'form-data';
+
+type BodyType = JSONObject | string | FormData;
 
 export class HttpClient {
   private _url: string;
@@ -96,31 +99,31 @@ export class HttpClient {
     return this.request(`${this._url}/${path}${queryParams}`, request);
   }
 
-  public async post(path: string, params: unknown): Promise<Response> {
+  public async post(path: string, body: BodyType): Promise<Response> {
     const request: RequestInit = {
       method: 'POST',
       headers: this.getHeaders(),
-      body: JSON.stringify(params),
+      body: getBody(body)
     };
 
     return this.request(`${this._url}/${path}`, request);
   }
 
-  public async put(path: string, params: unknown): Promise<Response> {
+  public async put(path: string, body: any): Promise<Response> {
     const request: RequestInit = {
       method: 'PUT',
       headers: this.getHeaders(),
-      body: JSON.stringify(params),
+      body: getBody(body)
     };
 
     return this.request(`${this._url}/${path}`, request);
   }
 
-  public async patch(path: string, params: unknown): Promise<Response> {
+  public async patch(path: string, body: BodyType): Promise<Response> {
     const request: RequestInit = {
       method: 'PATCH',
       headers: this.getHeaders(),
-      body: JSON.stringify(params),
+      body: getBody(body)
     };
 
     return this.request(`${this._url}/${path}`, request);
@@ -134,4 +137,14 @@ export class HttpClient {
 
     return this.request(`${this._url}/${path}`, request);
   }
+}
+
+function getBody(value: BodyType): BodyInit {
+  if (value instanceof FormData) {
+    return value;
+  } else if (typeof value === 'string') {
+    return value;
+  }
+
+  return JSON.stringify(value);
 }
