@@ -2,6 +2,7 @@ const commonjs = require('rollup-plugin-commonjs');
 const external = require('rollup-plugin-peer-deps-external');
 const resolve = require('rollup-plugin-node-resolve');
 const typescript = require('@rollup/plugin-typescript');
+const json = require('@rollup/plugin-json');
 
 module.exports = {
   input: 'src/index.ts',
@@ -19,5 +20,6 @@ module.exports = {
     external(),
     resolve(),
     commonjs(),
+    json()
   ],
 };
