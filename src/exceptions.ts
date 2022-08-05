@@ -1,5 +1,3 @@
-import { Response } from 'node-fetch';
-
 export class HttpException {
   public status: number;
   public message: string;

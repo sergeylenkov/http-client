@@ -13,8 +13,6 @@ import {
   HttpException,
 } from './exceptions';
 import { Dictionary, JSONObject } from './types';
-import fetch, { RequestInit, Response, HeadersInit, BodyInit } from 'node-fetch';
-import FormData from 'form-data';
 
 type BodyType = JSONObject | string | FormData;
 
@@ -140,9 +138,7 @@ export class HttpClient {
 }
 
 function getBody(value: BodyType): BodyInit {
-  if (value instanceof FormData) {
-    return value;
-  } else if (typeof value === 'string') {
+  if (typeof value === 'string') {
     return value;
   }
 

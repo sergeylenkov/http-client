@@ -30,11 +30,12 @@ export function addParamsToPath(path: string, args: any[], target: any, property
     target,
     propertyKey
   );
+  if (!params) {
+    return path;
+  }
 
-  if (params) {
-    for (const [key, value] of params) {
-      path = path.replace(`:${key}`, args[value]);
-    }
+  for (const [key, value] of params) {
+    path = path.replace(`:${key}`, args[value]);
   }
 
   return path;
@@ -76,6 +77,10 @@ export function addQueryToPath(path: string, args: any[], target: any, propertyK
   );
 
   const query = args[queryIndex];
+
+  if (!query) {
+    return path;
+  }
 
   if (typeof query === 'object') {
     let queryString = '';

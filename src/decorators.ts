@@ -10,7 +10,7 @@ import {
   RESPONSE_TYPE_META_DATA,
 } from './constants';
 import { HttpResponseType } from './types';
-import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam } from './utils';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath } from './utils';
 
 export function Http(url: string): ClassDecorator {
   return (constructor: any) => {
@@ -115,6 +115,7 @@ export function Get(path: string): MethodDecorator {
 
       addHeadersToClient(client, target);
       path = addParamsToPath(path, args, target, propertyKey);
+      path = addQueryToPath(path, args, target, propertyKey);
 
       const response = await client.get(path);
       const data = await getDataFromResponse(response, target, propertyKey);

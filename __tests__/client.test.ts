@@ -1,6 +1,10 @@
 import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
-import { JSONObject, HttpResponseType } from '../src/types';
+import { JSONObject, HttpResponseType, Dictionary } from '../src/types';
+import fetchMock, { FetchMock } from 'jest-fetch-mock';
+
+import usersJson from './mocks/users.json';
+import userJson from './mocks/user.json';
 
 const token = process.env.TEST_API_TOKEN;
 
@@ -14,12 +18,12 @@ interface User {
 
 const newUser: User = {
   name: 'Sergey Lenkov',
-  email: `${Date.now()}@gmail.com`,
+  email: 'sergey@sergeylenkov.ru',
   gender: 'male',
   status: 'active'
 }
 
-@Http('https://gorest.co.in/public/v2')
+@Http('https://test.com/api/v1')
 @Header(HttpHeader.Authorization, `Bearer ${token}`)
 @Header(HttpHeader.ContentType, 'application/json')
 class API {
@@ -30,6 +34,11 @@ class API {
 
   @Get('users')
   public async getUsersByPage(@Query() query?: JSONObject | string, @Response(HttpResponseType.Json) response?: JSONObject): Promise<User[]> {
+    return response as unknown as User[];
+  }
+
+  @Get('users')
+  public async getUsersByPage2(@Query() query?: JSONObject | string, @Response(HttpResponseType.Json) response?: JSONObject): Promise<User[]> {
     return response as unknown as User[];
   }
 
@@ -55,59 +64,125 @@ class API {
 }
 
 const api = new API();
-let testUser: User | undefined;
 
 describe('API Client', () => {
-  test('Get', async () => {
+  beforeAll(() => {
+    fetchMock.enableMocks();
+  });
+
+  beforeEach(() => {
+    fetchMock.resetMocks();
+  })
+
+  test('Headers', async () => {
+    fetchMock.mockResponse(JSON.stringify(usersJson));
+
     const users = await api.getUsers();
-    expect(users.length).toBeGreaterThan(1);
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+    const headers: Dictionary<string> = options.headers as Dictionary<string>;
+
+    expect(url).toBe('https://test.com/api/v1/users');
+    expect(options.method).toBe('GET');
+    expect(headers[HttpHeader.ContentType]).toBe('application/json');
+    expect(headers[HttpHeader.Authorization]).toBe(`Bearer ${token}`);
+    expect(users.length).toBe(10);
+  });
+
+  test('Get', async () => {
+    fetchMock.mockResponse(JSON.stringify(usersJson));
+
+    const users = await api.getUsers();
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users');
+    expect(options.method).toBe('GET');
+
+    expect(users.length).toBe(10);
   });
 
   test('Get with query as string', async () => {
+    fetchMock.mockResponse(JSON.stringify(usersJson));
+
     const users = await api.getUsersByPage('page=1');
-    expect(users.length).toBeGreaterThan(1);
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users?page=1');
+    expect(options.method).toBe('GET');
+
+    expect(users.length).toBe(10);
   });
 
   test('Get with query as object', async () => {
-    const users = await api.getUsersByPage({ page: 1 });
-    expect(users.length).toBeGreaterThan(1);
-  });
+    fetchMock.mockResponse(JSON.stringify(usersJson));
 
-  test('Post', async () => {
-    const user = await api.createUser(newUser);
+    const users = await api.getUsersByPage2({ page: 1 });
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
 
-    testUser = user;
+    expect(url).toBe('https://test.com/api/v1/users?page=1');
+    expect(options.method).toBe('GET');
 
-    expect(user.id).toBeGreaterThan(1);
-    expect(user.name).toBe(newUser.name);
+    expect(users.length).toBe(10);
   });
 
   test('Get by id', async () => {
-    expect(testUser).toBeDefined();
+    fetchMock.mockResponse(JSON.stringify(userJson));
 
-    if (testUser) {
-      const user = await api.getUser(testUser.id);
-      expect(user.id).toBe(testUser.id);
-    }
+    const user = await api.getUser(9999);
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users/9999');
+    expect(options.method).toBe('GET');
+    expect(user.id).toBe(9999);
+  });
+
+  test('Post', async () => {
+    fetchMock.mockResponse(JSON.stringify(userJson));
+
+    const user = await api.createUser(userJson as User);
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users');
+    expect(options.method).toBe('POST');
+    expect(user.id).toBe(9999);
+    expect(user.name).toBe(newUser.name);
   });
 
   test('Patch by id', async () => {
-    expect(testUser?.id).toBeDefined();
+    fetchMock.mockResponse(JSON.stringify(userJson));
 
-    if (testUser) {
-      testUser.gender = 'female';
+    const user = await api.changeUser(userJson.id, userJson as User);
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
 
-      const user = await api.changeUser(testUser.id, testUser);
-      expect(user.gender).toBe(testUser.gender);
-    }
+    expect(url).toBe('https://test.com/api/v1/users/9999');
+    expect(options.method).toBe('PATCH');
+    expect(user.id).toBe(9999);
   });
 
   test('Delete by id', async () => {
-    expect(testUser).toBeDefined();
+    fetchMock.mockResponse(JSON.stringify(9999));
+    const id = await api.deleteUser(9999);
 
-    if (testUser) {
-      const id = await api.deleteUser(testUser.id);
-      expect(id).toBe(testUser.id);
-    }
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users/9999');
+    expect(options.method).toBe('DELETE');
+    expect(id).toBe(9999);
   });
 })
+
+
+function getFetchUrl(fetchMock: FetchMock): string {
+  return String(fetchMock.mock.calls[0][0]);
+}
+
+function getFetchOptions(fetchMock: FetchMock): JSONObject {
+  return fetchMock.mock.calls[0][1] as JSONObject;
+}
