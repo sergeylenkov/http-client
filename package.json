@@ -1,6 +1,6 @@
 {
   "name": "@serglenkov/http-client",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "TypesScript http client based on decorators",
   "author": "Sergey Lenkov",
   "license": "ISC",
@@ -12,7 +12,8 @@
   ],
   "scripts": {
     "build": "rollup -c ./rollup.config.js",
-    "test": "jest --config ./jest.config.js --coverage=false -i"
+    "test": "jest --config ./jest.config.js --coverage=false -i",
+    "pack-and-publish": "npm pack && npm publish --access public"
   },
   "repository": {
     "type": "git",
@@ -37,6 +38,7 @@
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-url": "^3.0.1",
     "ts-jest": "^27.1.0",
+    "tslib": "^2.4.0",
     "typescript": "^4.5.2"
   }
 }
