@@ -5,12 +5,21 @@ jobs:
     runs-on: ubuntu-latest
     env:
       TEST_API_TOKEN: ${{secrets.TEST_API_TOKEN}}
+      NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+
     steps:
       - uses: actions/checkout@v2
       - uses: bahmutov/npm-install@v1
+      - uses: actions/setup-node@v3
+        with:
+          registry-url: 'https://registry.npmjs.org'
+          scope: '@serglenkov'
 
       - name: Build library
         run: npm run build
 
       - name: Test library
         run: npm run test
+
+      - name: Publish
+        run: npm run pack-and-publish

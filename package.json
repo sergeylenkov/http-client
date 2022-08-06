@@ -1,9 +1,9 @@
 {
   "name": "@serglenkov/http-client",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "TypesScript http client based on decorators",
   "author": "Sergey Lenkov",
-  "license": "ISC",
+  "license": "MIT",
   "main": "build/lib/index.js",
   "module": "build/lib/index.js",
   "types": "build/lib/index.d.ts",
@@ -18,6 +18,10 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/sergeylenkov/http-client.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "peerDependencies": {
     "reflect-metadata": "^0.1.13"
