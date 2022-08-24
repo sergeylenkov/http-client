@@ -2,6 +2,7 @@
 Small TypesScript http client based on decorators
 
 ![build lib workflow](https://github.com/sergeylenkov/http-client/actions/workflows/github-actions.yml/badge.svg)
+![npm](https://img.shields.io/npm/v/@serglenkov/http-client)
 
 ## How it works
 
