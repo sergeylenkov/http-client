@@ -5,8 +5,10 @@ import { HttpResponseType } from './types';
 export function addHeadersToClient(client: HttpClient, target: any) {
   const headers: Map<string, string> = Reflect.getMetadata(HEADER_META_DATA, target);
 
-  for (const [key, value] of headers) {
-    client.setHeader(key, value);
+  if (headers) {
+    for (const [key, value] of headers) {
+      client.setHeader(key, value);
+    }
   }
 }
 
