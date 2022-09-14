@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { Http, Header, Get, Param, Body, Response, Query } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import {
-  HTTP_CLIENT_META_DATA,
   HEADER_META_DATA,
   PATH_PARAM_META_DATA,
   BODY_META_DATA,
@@ -12,7 +11,7 @@ import {
 } from '../src/constants';
 import { HttpResponseType, JSONObject } from '../src/types';
 
-@Http('https://gorest.co.in/public/v2')
+@Http('https://test.com/api/v1')
 @Header(HttpHeader.Authorization, 'test')
 class TestClass {
   @Get('users')
@@ -25,12 +24,15 @@ class TestClass {
   }
 }
 
-const testClass = new TestClass();
+let testClass: TestClass;
 
 describe('Decorators', () => {
-  test('Http', () => {
-    const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
+  beforeAll(() => {
+    testClass = new TestClass();
+  })
 
+  test('Http', () => {
+    const client = (testClass as any).__HTTP_CLIENT__;
     expect(client).toBeDefined();
   });
 
@@ -39,12 +41,6 @@ describe('Decorators', () => {
 
     expect(header.has(HttpHeader.Authorization)).toBe(true);
     expect(header.get(HttpHeader.Authorization)).toBe('test');
-  });
-
-  test('Http', () => {
-    const client = Reflect.getMetadata(HTTP_CLIENT_META_DATA, global);
-
-    expect(client).toBeDefined();
   });
 
   test('Param', () => {
