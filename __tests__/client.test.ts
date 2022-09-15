@@ -129,15 +129,25 @@ describe('API Client', () => {
   });
 
   test('Get by id', async () => {
-    fetchMock.mockResponse(JSON.stringify(userJson));
+    fetchMock.mockResponse(JSON.stringify({...usersJson, id: 1000 }));
 
-    const user = await api.getUser(9999);
-    const url = getFetchUrl(fetchMock);
-    const options = getFetchOptions(fetchMock);
+    let user = await api.getUser(1000);
+    let url = getFetchUrl(fetchMock);
+    let options = getFetchOptions(fetchMock);
 
-    expect(url).toBe('https://test.com/api/v1/users/9999');
+    expect(url).toBe('https://test.com/api/v1/users/1000');
     expect(options.method).toBe('GET');
-    expect(user.id).toBe(9999);
+    expect(user.id).toBe(1000);
+
+    fetchMock.mockResponse(JSON.stringify({...usersJson, id: 2000 }));
+
+    user = await api.getUser(2000);
+    url = getFetchUrl(fetchMock, 1);
+    options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users/2000');
+    expect(options.method).toBe('GET');
+    expect(user.id).toBe(2000);
   });
 
   test('Post', async () => {
@@ -179,8 +189,8 @@ describe('API Client', () => {
 })
 
 
-function getFetchUrl(fetchMock: FetchMock): string {
-  return String(fetchMock.mock.calls[0][0]);
+function getFetchUrl(fetchMock: FetchMock, callIndex: number = 0): string {
+  return String(fetchMock.mock.calls[callIndex][0]);
 }
 
 function getFetchOptions(fetchMock: FetchMock): JSONObject {

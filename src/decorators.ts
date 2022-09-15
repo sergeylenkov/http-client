@@ -3,13 +3,14 @@ import { HttpClient } from './client';
 import {
   BODY_META_DATA,
   HEADER_META_DATA,
+  PATH_META_DATA,
   PATH_PARAM_META_DATA,
   QUERY_META_DATA,
   RESPONSE_META_DATA,
   RESPONSE_TYPE_META_DATA,
 } from './constants';
 import { HttpResponseType } from './types';
-import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient } from './utils';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient, getPath } from './utils';
 
 export function Http(url: string): ClassDecorator {
   return (constructor: any) => {
@@ -106,16 +107,20 @@ export function Get(path: string): MethodDecorator {
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>
   ) => {
+    Reflect.defineMetadata(PATH_META_DATA, path, target, propertyKey);
+
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
       const client = getClient(target);
 
       addHeadersToClient(client, target);
-      path = addParamsToPath(path, args, target, propertyKey);
-      path = addQueryToPath(path, args, target, propertyKey);
 
-      const response = await client.get(path);
+      let newPath = getPath(target, propertyKey);
+      newPath = addParamsToPath(newPath, args, target, propertyKey);
+      newPath = addQueryToPath(newPath, args, target, propertyKey);
+
+      const response = await client.get(newPath);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
@@ -131,6 +136,8 @@ export function Post(path: string): MethodDecorator {
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>
   ) => {
+    Reflect.defineMetadata(PATH_META_DATA, path, target, propertyKey);
+
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
@@ -138,9 +145,11 @@ export function Post(path: string): MethodDecorator {
       const body = getBodyParam(args, target, propertyKey);
 
       addHeadersToClient(client, target);
-      path = addParamsToPath(path, args, target, propertyKey);
 
-      const response = await client.post(path, body);
+      let newPath = getPath(target, propertyKey);
+      newPath = addParamsToPath(newPath, args, target, propertyKey);
+
+      const response = await client.post(newPath, body);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
@@ -156,6 +165,8 @@ export function Patch(path: string): MethodDecorator {
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>
   ) => {
+    Reflect.defineMetadata(PATH_META_DATA, path, target, propertyKey);
+
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
@@ -163,9 +174,11 @@ export function Patch(path: string): MethodDecorator {
       const body = getBodyParam(args, target, propertyKey);
 
       addHeadersToClient(client, target);
-      path = addParamsToPath(path, args, target, propertyKey);
 
-      const response = await client.patch(path, body);
+      let newPath = getPath(target, propertyKey);
+      newPath = addParamsToPath(newPath, args, target, propertyKey);
+
+      const response = await client.patch(newPath, body);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
@@ -181,15 +194,19 @@ export function Delete(path: string): MethodDecorator {
     propertyKey: string | symbol,
     descriptor: TypedPropertyDescriptor<any>
   ) => {
+    Reflect.defineMetadata(PATH_META_DATA, path, target, propertyKey);
+
     const method = descriptor.value;
 
     descriptor.value = async (...args: any[]) => {
       const client = getClient(target);
 
       addHeadersToClient(client, target);
-      path = addParamsToPath(path, args, target, propertyKey);
 
-      const response = await client.delete(path);
+      let newPath = getPath(target, propertyKey);
+      newPath = addParamsToPath(newPath, args, target, propertyKey);
+
+      const response = await client.delete(newPath);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);

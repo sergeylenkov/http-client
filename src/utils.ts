@@ -1,5 +1,5 @@
 import { HttpClient } from './client';
-import { BODY_META_DATA, HEADER_META_DATA, PATH_PARAM_META_DATA, QUERY_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
+import { BODY_META_DATA, HEADER_META_DATA, PATH_META_DATA, PATH_PARAM_META_DATA, QUERY_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
 import { HttpResponseType } from './types';
 
 export function getClient(target: any): HttpClient {
@@ -63,6 +63,14 @@ export async function getDataFromResponse(response: Response, target: any, prope
   }
 
   return data;
+}
+
+export function getPath(target: any, propertyKey: string | symbol): string {
+  return Reflect.getOwnMetadata(
+    PATH_META_DATA,
+    target,
+    propertyKey
+  );
 }
 
 export function getBodyParam(args: any[], target: any, propertyKey: string | symbol): any {

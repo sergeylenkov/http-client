@@ -9,10 +9,10 @@ jobs:
       - uses: bahmutov/npm-install@v1
       - uses: actions/setup-node@v3
 
-      - name: Build library
+      - name: Build
         run: npm run build
 
-      - name: Test library
+      - name: Test
         run: npm run test
 
   publish:
@@ -29,6 +29,9 @@ jobs:
         with:
           registry-url: 'https://registry.npmjs.org'
           scope: '@serglenkov'
+
+      - name: Build
+        run: npm run build
 
       - name: Publish
         run: npm run pack-and-publish
