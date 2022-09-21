@@ -3,6 +3,7 @@ import { HttpClient } from './client';
 import {
   BODY_META_DATA,
   HEADER_META_DATA,
+  HEADER_REQUEST_META_DATA,
   PATH_META_DATA,
   PATH_PARAM_META_DATA,
   QUERY_META_DATA,
@@ -10,11 +11,24 @@ import {
   RESPONSE_TYPE_META_DATA,
 } from './constants';
 import { HttpResponseType } from './types';
-import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient, getPath } from './utils';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient, getPath, getRequestHeaders } from './utils';
 
 export function Http(url: string): ClassDecorator {
   return (constructor: any) => {
     constructor.prototype.__HTTP_CLIENT__ = new HttpClient(url);
+  };
+}
+
+export function Header(key: string, value: string): ClassDecorator {
+  return (constructor: any) => {
+    const headers: Map<string, string> = Reflect.getOwnMetadata(
+      HEADER_META_DATA,
+      constructor.prototype
+    ) || new Map();
+
+    headers.set(key, value);
+
+    Reflect.defineMetadata(HEADER_META_DATA, headers, constructor.prototype);
   };
 }
 
@@ -73,18 +87,6 @@ export function Body(): ParameterDecorator {
   };
 }
 
-export function Header(key: string, value: string): ClassDecorator {
-  return (constructor: any) => {
-    const headers: Map<string, string> = Reflect.getOwnMetadata(
-      HEADER_META_DATA,
-      constructor.prototype
-    ) || new Map();
-
-    headers.set(key, value);
-
-    Reflect.defineMetadata(HEADER_META_DATA, headers, constructor.prototype);
-  };
-}
 
 export function Query(): ParameterDecorator {
   return (
@@ -116,11 +118,13 @@ export function Get(path: string): MethodDecorator {
 
       addHeadersToClient(client, target);
 
+      const requestHeaders = getRequestHeaders(target, propertyKey);
+
       let newPath = getPath(target, propertyKey);
       newPath = addParamsToPath(newPath, args, target, propertyKey);
       newPath = addQueryToPath(newPath, args, target, propertyKey);
 
-      const response = await client.get(newPath);
+      const response = await client.get(newPath, requestHeaders);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
@@ -146,10 +150,12 @@ export function Post(path: string): MethodDecorator {
 
       addHeadersToClient(client, target);
 
+      const requestHeaders = getRequestHeaders(target, propertyKey);
+
       let newPath = getPath(target, propertyKey);
       newPath = addParamsToPath(newPath, args, target, propertyKey);
 
-      const response = await client.post(newPath, body);
+      const response = await client.post(newPath, body, requestHeaders);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
@@ -175,10 +181,12 @@ export function Patch(path: string): MethodDecorator {
 
       addHeadersToClient(client, target);
 
+      const requestHeaders = getRequestHeaders(target, propertyKey);
+
       let newPath = getPath(target, propertyKey);
       newPath = addParamsToPath(newPath, args, target, propertyKey);
 
-      const response = await client.patch(newPath, body);
+      const response = await client.patch(newPath, body, requestHeaders);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
@@ -203,15 +211,35 @@ export function Delete(path: string): MethodDecorator {
 
       addHeadersToClient(client, target);
 
+      const requestHeaders = getRequestHeaders(target, propertyKey);
+
       let newPath = getPath(target, propertyKey);
       newPath = addParamsToPath(newPath, args, target, propertyKey);
 
-      const response = await client.delete(newPath);
+      const response = await client.delete(newPath, requestHeaders);
       const data = await getDataFromResponse(response, target, propertyKey);
 
       args = appendResponseToArgs(data, args, target, propertyKey);
 
       return method.apply(target, args);
     };
+  };
+}
+
+export function RequestHeader(key: string, value: string): MethodDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<any>
+  ) => {
+    const headers: Map<string, string> = Reflect.getOwnMetadata(
+      HEADER_REQUEST_META_DATA,
+      target,
+      propertyKey
+    ) || new Map();
+
+    headers.set(key, value);
+
+    Reflect.defineMetadata(HEADER_REQUEST_META_DATA, headers, target, propertyKey);
   };
 }

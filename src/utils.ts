@@ -1,5 +1,5 @@
 import { HttpClient } from './client';
-import { BODY_META_DATA, HEADER_META_DATA, PATH_META_DATA, PATH_PARAM_META_DATA, QUERY_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
+import { BODY_META_DATA, HEADER_META_DATA, HEADER_REQUEST_META_DATA, PATH_META_DATA, PATH_PARAM_META_DATA, QUERY_META_DATA, RESPONSE_META_DATA, RESPONSE_TYPE_META_DATA } from './constants';
 import { HttpResponseType } from './types';
 
 export function getClient(target: any): HttpClient {
@@ -47,6 +47,34 @@ export function addParamsToPath(path: string, args: any[], target: any, property
   return path;
 }
 
+export function addQueryToPath(path: string, args: any[], target: any, propertyKey: string | symbol): string {
+  const queryIndex: number = Reflect.getOwnMetadata(
+    QUERY_META_DATA,
+    target,
+    propertyKey
+  );
+
+  const query = args[queryIndex];
+
+  if (!query) {
+    return path;
+  }
+
+  if (typeof query === 'object') {
+    let queryString = '';
+
+    Object.keys(query).forEach((key) => {
+      queryString = queryString + `${key}=${query[key]}&`;
+    })
+
+    queryString = queryString.slice(0, -1);
+
+    return `${path}?${queryString}`;
+  }
+
+  return`${path}?${query}`;
+}
+
 export async function getDataFromResponse(response: Response, target: any, propertyKey: string | symbol): Promise<any> {
   const responseType: HttpResponseType = Reflect.getOwnMetadata(
     RESPONSE_TYPE_META_DATA,
@@ -83,30 +111,10 @@ export function getBodyParam(args: any[], target: any, propertyKey: string | sym
   return args[bodyIndex];
 }
 
-export function addQueryToPath(path: string, args: any[], target: any, propertyKey: string | symbol): string {
-  const queryIndex: number = Reflect.getOwnMetadata(
-    QUERY_META_DATA,
+export function getRequestHeaders(target: any, propertyKey: string | symbol): Map<string, string> {
+  return Reflect.getOwnMetadata(
+    HEADER_REQUEST_META_DATA,
     target,
     propertyKey
   );
-
-  const query = args[queryIndex];
-
-  if (!query) {
-    return path;
-  }
-
-  if (typeof query === 'object') {
-    let queryString = '';
-
-    Object.keys(query).forEach((key) => {
-      queryString = queryString + `${key}=${query[key]}&`;
-    })
-
-    queryString = queryString.slice(0, -1);
-
-    return `${path}?${queryString}`;
-  }
-
-  return`${path}?${query}`;
 }

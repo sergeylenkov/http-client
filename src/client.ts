@@ -35,6 +35,9 @@ export class HttpClient {
 
   private async request(url: string, request: RequestInit): Promise<Response> {
     try {
+      const headers = {...request.headers, ...this.getHeaders()};
+      request.headers = headers;
+
       const response = await fetch(url, request);
 
       if (isSuccessful(response.status)) {
@@ -75,63 +78,62 @@ export class HttpClient {
 
   public async get(
     path: string,
-    params?: Dictionary<string>
+    headers?: Map<string, string>
   ): Promise<Response> {
     const request: RequestInit = {
       method: 'GET',
-      headers: this.getHeaders(),
     };
 
-    let queryParams = '';
-
-    if (params) {
-      queryParams = '?';
-
-      Object.keys(params).forEach((key) => {
-        queryParams = queryParams + `${key}=${params[key]}&`;
-      });
-
-      queryParams = queryParams.slice(0, -1);
+    if (headers) {
+      request.headers = Object.fromEntries(headers);
     }
 
-    return this.request(`${this._url}/${path}${queryParams}`, request);
+    return this.request(`${this._url}/${path}`, request);
   }
 
-  public async post(path: string, body: BodyType): Promise<Response> {
+  public async post(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'POST',
-      headers: this.getHeaders(),
       body: getBody(body)
     };
 
     return this.request(`${this._url}/${path}`, request);
   }
 
-  public async put(path: string, body: any): Promise<Response> {
+  public async put(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'PUT',
-      headers: this.getHeaders(),
       body: getBody(body)
     };
+
+    if (headers) {
+      request.headers = Object.fromEntries(headers);
+    }
 
     return this.request(`${this._url}/${path}`, request);
   }
 
-  public async patch(path: string, body: BodyType): Promise<Response> {
+  public async patch(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'PATCH',
-      headers: this.getHeaders(),
       body: getBody(body)
     };
+
+    if (headers) {
+      request.headers = Object.fromEntries(headers);
+    }
 
     return this.request(`${this._url}/${path}`, request);
   }
 
-  public delete(path: string): Promise<Response> {
+  public delete(path: string, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'DELETE',
-      headers: this.getHeaders(),
     };
+
+    if (headers) {
+      request.headers = Object.fromEntries(headers);
+    }
 
     return this.request(`${this._url}/${path}`, request);
   }
