@@ -5,6 +5,8 @@ import fetchMock, { FetchMock } from 'jest-fetch-mock';
 
 import usersJson from './mocks/users.json';
 import userJson from './mocks/user.json';
+import { HttpClientException, HttpException, HttpServerException } from '../src/exceptions';
+import { HttpStatus } from '../src/statuses';
 
 const token = process.env.TEST_API_TOKEN;
 
@@ -186,8 +188,29 @@ describe('API Client', () => {
     expect(options.method).toBe('DELETE');
     expect(id).toBe(9999);
   });
-})
 
+  test('404', async () => {
+    fetchMock.mockResponse(JSON.stringify(9999), { status: 404 });
+
+    try {
+      const id = await api.getUser(9999);
+    } catch (error) {
+      expect(error instanceof HttpClientException).toBe(true);
+      expect((error as HttpException).status).toBe(404);
+    }
+  });
+
+  test('500', async () => {
+    fetchMock.mockResponse(JSON.stringify(9999), { status: 500 });
+
+    try {
+      const id = await api.getUser(9999);
+    } catch (error) {
+      expect(error instanceof HttpServerException).toBe(true);
+      expect((error as HttpException).status).toBe(500);
+    }
+  });
+})
 
 function getFetchUrl(fetchMock: FetchMock, callIndex: number = 0): string {
   return String(fetchMock.mock.calls[callIndex][0]);
