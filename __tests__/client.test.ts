@@ -5,7 +5,7 @@ import fetchMock, { FetchMock } from 'jest-fetch-mock';
 
 import usersJson from './mocks/users.json';
 import userJson from './mocks/user.json';
-import { HttpClientException, HttpException, HttpServerException } from '../src/exceptions';
+import { HttpAuthorizationException, HttpClientException, HttpException, HttpServerException } from '../src/exceptions';
 import { HttpStatus } from '../src/statuses';
 
 const token = process.env.TEST_API_TOKEN;
@@ -196,7 +196,7 @@ describe('API Client', () => {
       const id = await api.getUser(9999);
     } catch (error) {
       expect(error instanceof HttpClientException).toBe(true);
-      expect((error as HttpException).status).toBe(404);
+      expect((error as HttpException).status).toBe(HttpStatus.NotFound);
     }
   });
 
@@ -207,7 +207,18 @@ describe('API Client', () => {
       const id = await api.getUser(9999);
     } catch (error) {
       expect(error instanceof HttpServerException).toBe(true);
-      expect((error as HttpException).status).toBe(500);
+      expect((error as HttpException).status).toBe(HttpStatus.InternalServerError);
+    }
+  });
+
+  test('401', async () => {
+    fetchMock.mockResponse(JSON.stringify(9999), { status: 401 });
+
+    try {
+      const id = await api.getUser(9999);
+    } catch (error) {
+      expect(error instanceof HttpAuthorizationException).toBe(true);
+      expect((error as HttpAuthorizationException).status).toBe(HttpStatus.Unauthorized);
     }
   });
 })

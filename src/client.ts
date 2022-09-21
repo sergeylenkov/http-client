@@ -39,6 +39,12 @@ export class HttpClient {
 
       if (isSuccessful(response.status)) {
         return response;
+      } else if (isAuthError(response.status)) {
+        throw new HttpAuthorizationException(
+          response.status,
+          response.statusText,
+          response
+        );
       } else if (isClientError(response.status)) {
         throw new HttpClientException(
           response.status,
@@ -47,12 +53,6 @@ export class HttpClient {
         );
       } else if (isServerError(response.status)) {
         throw new HttpServerException(
-          response.status,
-          response.statusText,
-          response
-        );
-      } else if (isAuthError(response.status)) {
-        throw new HttpAuthorizationException(
           response.status,
           response.statusText,
           response
