@@ -1,4 +1,4 @@
-import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query } from '../src/decorators';
+import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query, Cache } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import { JSONObject, HttpResponseType, Dictionary } from '../src/types';
 import fetchMock, { FetchMock } from 'jest-fetch-mock';
@@ -47,6 +47,12 @@ class API {
   @Get('users/:id')
   public async getUser(@Param('id') id?: number, @Response(HttpResponseType.Json) response?: JSONObject): Promise<User> {
     return response as unknown as User;
+  }
+
+  @Get('users')
+  @Cache(60)
+  public async getUsersWithCache(@Response(HttpResponseType.Json) response?: JSONObject): Promise<User[]> {
+    return response as unknown as User[];
   }
 
   @Post('users')
@@ -150,6 +156,26 @@ describe('API Client', () => {
     expect(url).toBe('https://test.com/api/v1/users/2000');
     expect(options.method).toBe('GET');
     expect(user.id).toBe(2000);
+  });
+
+  test('Cache', async () => {
+    fetchMock.mockResponse(JSON.stringify(usersJson));
+
+    let users = await api.getUsersWithCache();
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users');
+    expect(options.method).toBe('GET');
+
+    expect(users.length).toBe(10);
+
+    fetchMock.mockClear();
+
+    users = await api.getUsersWithCache();
+
+    expect(fetchMock.mock.calls).toEqual([]);
+    expect(users.length).toBe(10);
   });
 
   test('Post', async () => {

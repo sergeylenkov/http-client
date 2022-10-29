@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Http, Header, Get, Param, Body, Response, Query, RequestHeader, Post, Patch, Delete } from '../src/decorators';
+import { Http, Header, Get, Param, Body, Response, Query, RequestHeader, Post, Patch, Delete, Cache } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import {
   HEADER_META_DATA,
@@ -9,10 +9,10 @@ import {
   RESPONSE_TYPE_META_DATA,
   QUERY_META_DATA,
   HEADER_REQUEST_META_DATA,
-  PATH_META_DATA
+  PATH_META_DATA,
+  CACHE_META_DATA
 } from '../src/constants';
 import { HttpResponseType, JSONObject } from '../src/types';
-import { Headers } from 'node-fetch';
 
 @Http('https://test.com/api/v1')
 @Header(HttpHeader.Authorization, 'test')
@@ -35,6 +35,9 @@ class TestClass {
 
   @Delete('users')
   public deleteMethod() {}
+
+  @Cache(100)
+  public cacheMethod() {}
 }
 
 let testClass: TestClass;
@@ -112,5 +115,11 @@ describe('Decorators', () => {
     const path: string = Reflect.getMetadata(PATH_META_DATA, testClass, 'deleteMethod');
 
     expect(path).toBe('users');
+  });
+
+  test('LocalCache', () => {
+    const lifegime: number = Reflect.getMetadata(CACHE_META_DATA, testClass, 'cacheMethod');
+
+    expect(lifegime).toBe(100);
   });
 });

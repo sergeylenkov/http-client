@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { HttpClient } from './client';
 import {
   BODY_META_DATA,
+  CACHE_META_DATA,
   HEADER_META_DATA,
   HEADER_REQUEST_META_DATA,
   PATH_META_DATA,
@@ -11,7 +12,7 @@ import {
   RESPONSE_TYPE_META_DATA,
 } from './constants';
 import { HttpResponseType } from './types';
-import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient, getPath, getRequestHeaders } from './utils';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient, getPath, getRequestHeaders, getCacheLifetime } from './utils';
 
 export function Http(url: string): ClassDecorator {
   return (constructor: any) => {
@@ -32,7 +33,7 @@ export function Header(key: string, value: string): ClassDecorator {
   };
 }
 
-export function Response(type?: HttpResponseType ): ParameterDecorator {
+export function Response(type?: HttpResponseType): ParameterDecorator {
   return (
     target: any,
     propertyKey: string | symbol,
@@ -124,8 +125,17 @@ export function Get(path: string): MethodDecorator {
       newPath = addParamsToPath(newPath, args, target, propertyKey);
       newPath = addQueryToPath(newPath, args, target, propertyKey);
 
-      const response = await client.get(newPath, requestHeaders);
-      const data = await getDataFromResponse(response, target, propertyKey);
+      let data = client.getCache(newPath);
+      const lifetime = getCacheLifetime(target, propertyKey);
+
+      if (data === undefined) {
+        const response = await client.get(newPath, requestHeaders);
+        data = await getDataFromResponse(response, target, propertyKey);
+
+        if (lifetime !== undefined) {
+          client.setCache(newPath, data, lifetime);
+        }
+      }
 
       args = appendResponseToArgs(data, args, target, propertyKey);
 
@@ -241,5 +251,15 @@ export function RequestHeader(key: string, value: string): MethodDecorator {
     headers.set(key, value);
 
     Reflect.defineMetadata(HEADER_REQUEST_META_DATA, headers, target, propertyKey);
+  };
+}
+
+export function Cache(lifetime: number): MethodDecorator {
+  return (
+    target: any,
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<any>
+  ) => {
+    Reflect.defineMetadata(CACHE_META_DATA, lifetime, target, propertyKey);
   };
 }

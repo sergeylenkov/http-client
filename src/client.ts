@@ -12,17 +12,17 @@ import {
   HttpAuthorizationException,
   HttpException,
 } from './exceptions';
-import { Dictionary, JSONObject } from './types';
-
-type BodyType = JSONObject | string | FormData;
+import { BodyType, CacheData } from './types';
 
 export class HttpClient {
   private _url: string;
   private _headers: Map<string, string>;
+  private _cache: Map<string, CacheData>;
 
   constructor(url: string) {
     this._url = url;
     this._headers = new Map();
+    this._cache = new Map();
   }
 
   public setHeader(key: string, value: string): void {
@@ -31,6 +31,28 @@ export class HttpClient {
 
   private getHeaders(): HeadersInit {
     return Object.fromEntries(this._headers);
+  }
+
+  public setCache(path: string, data: unknown, lifetime: number) {
+    this._cache.set(path, {
+      expired: Date.now() + lifetime * 1000,
+      data
+    });
+  }
+
+  public getCache(path: string): unknown | undefined {
+    const cache = this._cache.get(path);
+
+    if (cache) {
+      if (Date.now() >= cache.expired) {
+        this._cache.delete(path);
+        return undefined;
+      }
+
+      return cache.data;
+    }
+
+    return undefined;
   }
 
   private async request(url: string, request: RequestInit): Promise<Response> {
