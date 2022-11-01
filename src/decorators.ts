@@ -9,15 +9,17 @@ import {
   PATH_PARAM_META_DATA,
   QUERY_META_DATA,
   RESPONSE_META_DATA,
-  RESPONSE_TYPE_META_DATA,
+  RESPONSE_TYPE_META_DATA
 } from './constants';
 import { HttpResponseType } from './types';
-import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getClient, getPath, getRequestHeaders, getCacheLifetime } from './utils';
+import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getPath, getRequestHeaders, getCacheLifetime } from './utils';
 
-export function Http(url: string): ClassDecorator {
-  return (constructor: any) => {
-    constructor.prototype.__HTTP_CLIENT__ = new HttpClient(url);
-  };
+export function BaseUrl(url: string) {
+  return function <T extends { new(...args: any[]): {} }>(constructor: T) {
+    return class extends constructor {
+      _url = url;
+    }
+  }
 }
 
 export function Header(key: string, value: string): ClassDecorator {
@@ -88,7 +90,6 @@ export function Body(): ParameterDecorator {
   };
 }
 
-
 export function Query(): ParameterDecorator {
   return (
     target: any,
@@ -114,8 +115,8 @@ export function Get(path: string): MethodDecorator {
 
     const method = descriptor.value;
 
-    descriptor.value = async (...args: any[]) => {
-      const client = getClient(target);
+    descriptor.value = async function(...args: any[]) {
+      const client = this as unknown as HttpClient;
 
       addHeadersToClient(client, target);
 
@@ -154,8 +155,8 @@ export function Post(path: string): MethodDecorator {
 
     const method = descriptor.value;
 
-    descriptor.value = async (...args: any[]) => {
-      const client = getClient(target);
+    descriptor.value = async function (...args: any[]) {
+      const client = this as unknown as HttpClient;
       const body = getBodyParam(args, target, propertyKey);
 
       addHeadersToClient(client, target);
@@ -185,8 +186,8 @@ export function Patch(path: string): MethodDecorator {
 
     const method = descriptor.value;
 
-    descriptor.value = async (...args: any[]) => {
-      const client = getClient(target);
+    descriptor.value = async function(...args: any[]) {
+      const client = this as unknown as HttpClient;
       const body = getBodyParam(args, target, propertyKey);
 
       addHeadersToClient(client, target);
@@ -216,8 +217,8 @@ export function Delete(path: string): MethodDecorator {
 
     const method = descriptor.value;
 
-    descriptor.value = async (...args: any[]) => {
-      const client = getClient(target);
+    descriptor.value = async function(...args: any[]) {
+      const client = this as unknown as HttpClient;
 
       addHeadersToClient(client, target);
 

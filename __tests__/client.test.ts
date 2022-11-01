@@ -1,4 +1,4 @@
-import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query, Cache } from '../src/decorators';
+import { Get, Post, Param, Response, Body, Header, Delete, Patch, Query, Cache, BaseUrl } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import { JSONObject, HttpResponseType, Dictionary } from '../src/types';
 import fetchMock, { FetchMock } from 'jest-fetch-mock';
@@ -7,6 +7,7 @@ import usersJson from './mocks/users.json';
 import userJson from './mocks/user.json';
 import { HttpAuthorizationException, HttpClientException, HttpException, HttpServerException } from '../src/exceptions';
 import { HttpStatus } from '../src/statuses';
+import { HttpClient } from '../src/client';
 
 const token = process.env.TEST_API_TOKEN;
 
@@ -25,10 +26,10 @@ const newUser: User = {
   status: 'active'
 }
 
-@Http('https://test.com/api/v1')
+@BaseUrl('https://test.com/api/v1')
 @Header(HttpHeader.Authorization, `Bearer ${token}`)
 @Header(HttpHeader.ContentType, 'application/json')
-class API {
+class API extends HttpClient {
   @Get('users')
   public async getUsers(@Response(HttpResponseType.Json) response?: JSONObject): Promise<User[]> {
     return response as unknown as User[];

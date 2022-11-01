@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Http, Header, Get, Param, Body, Response, Query, RequestHeader, Post, Patch, Delete, Cache } from '../src/decorators';
+import { Header, Get, Param, Body, Response, Query, RequestHeader, Post, Patch, Delete, Cache, BaseUrl } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import {
   HEADER_META_DATA,
@@ -13,10 +13,11 @@ import {
   CACHE_META_DATA
 } from '../src/constants';
 import { HttpResponseType, JSONObject } from '../src/types';
+import { HttpClient } from '../src/client';
 
-@Http('https://test.com/api/v1')
+@BaseUrl('https://test.com/api/v1')
 @Header(HttpHeader.Authorization, 'test')
-class TestClass {
+class TestClass extends HttpClient {
   @Get('users')
   @RequestHeader(HttpHeader.ContentType, 'application/json')
   public getMethod(
@@ -46,11 +47,6 @@ describe('Decorators', () => {
   beforeAll(() => {
     testClass = new TestClass();
   })
-
-  test('Http', () => {
-    const client = (testClass as any).__HTTP_CLIENT__;
-    expect(client).toBeDefined();
-  });
 
   test('Header', () => {
     const headers = Reflect.getMetadata(HEADER_META_DATA, testClass);
