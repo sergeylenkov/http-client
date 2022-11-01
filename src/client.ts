@@ -19,18 +19,10 @@ export class HttpClient {
   private _headers: Map<string, string>;
   private _cache: Map<string, CacheData>;
 
-  constructor(url?: string) {
-    this._url = url || '';
+  constructor(url: string) {
+    this._url = url;
     this._headers = new Map();
     this._cache = new Map();
-  }
-
-  public set url(url: string) {
-    this._url = url;
-  }
-
-  public get url(): string {
-    return this._url;
   }
 
   public setHeader(key: string, value: string): void {
@@ -61,18 +53,6 @@ export class HttpClient {
     }
 
     return undefined;
-  }
-
-  public clearCache() {
-    this._cache.clear();
-  }
-
-  private getBody(value: BodyType): BodyInit {
-    if (typeof value === 'string') {
-      return value;
-    }
-
-    return JSON.stringify(value);
   }
 
   private async request(url: string, request: RequestInit): Promise<Response> {
@@ -136,7 +116,7 @@ export class HttpClient {
   public async post(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'POST',
-      body: this.getBody(body)
+      body: getBody(body)
     };
 
     return this.request(`${this._url}/${path}`, request);
@@ -145,7 +125,7 @@ export class HttpClient {
   public async put(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'PUT',
-      body: this.getBody(body)
+      body: getBody(body)
     };
 
     if (headers) {
@@ -158,7 +138,7 @@ export class HttpClient {
   public async patch(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
     const request: RequestInit = {
       method: 'PATCH',
-      body: this.getBody(body)
+      body: getBody(body)
     };
 
     if (headers) {
@@ -179,4 +159,12 @@ export class HttpClient {
 
     return this.request(`${this._url}/${path}`, request);
   }
+}
+
+function getBody(value: BodyType): BodyInit {
+  if (typeof value === 'string') {
+    return value;
+  }
+
+  return JSON.stringify(value);
 }
