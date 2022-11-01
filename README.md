@@ -9,7 +9,7 @@ Small TypesScript http client based on decorators
 Declare class
 
 ```
-@Http('https://gorest.co.in/public/v2')
+@Http('https://example.com/api/v2')
 class API {
   @Get('users')
   public async getUsers(@Response(ResponseType.Json) response?: JSONObject): Promise<User[]> {
