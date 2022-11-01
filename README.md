@@ -9,8 +9,8 @@ Small TypesScript http client based on decorators
 Declare class
 
 ```
-@Http('https://gorest.co.in/public/v2')
-class API {
+@BaseUrl('https://gorest.co.in/public/v2')
+class API extends HttpClient {
   @Get('users')
   public async getUsers(@Response(ResponseType.Json) response?: JSONObject): Promise<User[]> {
     return response as unknown as User[];
