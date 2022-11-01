@@ -15,14 +15,10 @@ import { HttpResponseType } from './types';
 import { addHeadersToClient, appendResponseToArgs, addParamsToPath, getDataFromResponse, getBodyParam, addQueryToPath, getPath, getRequestHeaders, getCacheLifetime } from './utils';
 
 export function BaseUrl(url: string) {
-  return function <T extends { new (...args: any[]): {} }>(
-    ctr: T
-  ) {
-    return class extends ctr {
-      constructor(...args: any[]) {
-        super(url);
-      }
-    };
+  return function <T extends { new(...args: any[]): {} }>(constructor: T) {
+    return class extends constructor {
+      _url = url;
+    }
   }
 }
 

@@ -15,12 +15,22 @@ import {
 import { BodyType, CacheData } from './types';
 
 export class HttpClient {
+  private _url: string;
   private _headers: Map<string, string>;
   private _cache: Map<string, CacheData>;
 
-  constructor(public url?: string) {
+  constructor(url?: string) {
+    this._url = url || '';
     this._headers = new Map();
     this._cache = new Map();
+  }
+
+  public set url(url: string) {
+    this._url = url;
+  }
+
+  public get url(): string {
+    return this._url;
   }
 
   public setHeader(key: string, value: string): void {
@@ -120,7 +130,7 @@ export class HttpClient {
       request.headers = Object.fromEntries(headers);
     }
 
-    return this.request(`${this.url}/${path}`, request);
+    return this.request(`${this._url}/${path}`, request);
   }
 
   public async post(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
@@ -129,7 +139,7 @@ export class HttpClient {
       body: this.getBody(body)
     };
 
-    return this.request(`${this.url}/${path}`, request);
+    return this.request(`${this._url}/${path}`, request);
   }
 
   public async put(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
@@ -142,7 +152,7 @@ export class HttpClient {
       request.headers = Object.fromEntries(headers);
     }
 
-    return this.request(`${this.url}/${path}`, request);
+    return this.request(`${this._url}/${path}`, request);
   }
 
   public async patch(path: string, body: BodyType, headers?: Map<string, string>): Promise<Response> {
@@ -155,7 +165,7 @@ export class HttpClient {
       request.headers = Object.fromEntries(headers);
     }
 
-    return this.request(`${this.url}/${path}`, request);
+    return this.request(`${this._url}/${path}`, request);
   }
 
   public delete(path: string, headers?: Map<string, string>): Promise<Response> {
@@ -167,6 +177,6 @@ export class HttpClient {
       request.headers = Object.fromEntries(headers);
     }
 
-    return this.request(`${this.url}/${path}`, request);
+    return this.request(`${this._url}/${path}`, request);
   }
 }
