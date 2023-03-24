@@ -136,6 +136,19 @@ describe('API Client', () => {
     expect(users.length).toBe(10);
   });
 
+  test('Get with query as object with multiply params', async () => {
+    fetchMock.mockResponse(JSON.stringify(usersJson));
+
+    const users = await api.getUsersByPage2({ page: 1, search: 'a', filter: 'b' });
+    const url = getFetchUrl(fetchMock);
+    const options = getFetchOptions(fetchMock);
+
+    expect(url).toBe('https://test.com/api/v1/users?page=1&search=a&filter=b');
+    expect(options.method).toBe('GET');
+
+    expect(users.length).toBe(10);
+  });
+
   test('Get by id', async () => {
     fetchMock.mockResponse(JSON.stringify({...usersJson, id: 1000 }));
 

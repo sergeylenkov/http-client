@@ -60,19 +60,9 @@ export function addQueryToPath(path: string, args: any[], target: any, propertyK
     return path;
   }
 
-  if (typeof query === 'object') {
-    let queryString = '';
+  const queryParams = new URLSearchParams(query);
 
-    Object.keys(query).forEach((key) => {
-      queryString = queryString + `${key}=${query[key]}&`;
-    })
-
-    queryString = queryString.slice(0, -1);
-
-    return `${path}?${queryString}`;
-  }
-
-  return`${path}?${query}`;
+  return`${path}?${queryParams}`;
 }
 
 export async function getDataFromResponse(response: Response, target: any, propertyKey: string | symbol): Promise<any> {
