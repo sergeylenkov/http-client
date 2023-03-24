@@ -1,6 +1,6 @@
 {
   "name": "@serglenkov/http-client",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "TypesScript http client based on decorators",
   "author": "Sergey Lenkov",
   "license": "MIT",
