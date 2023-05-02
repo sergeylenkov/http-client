@@ -1,4 +1,4 @@
-import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query, Cache } from '../src/decorators';
+import { Get, Post, Http, Param, Response, Body, Header, Delete, Patch, Query, Cache, RequestHeader } from '../src/decorators';
 import { HttpHeader } from '../src/headers';
 import { JSONObject, HttpResponseType, Dictionary } from '../src/types';
 import fetchMock, { FetchMock } from 'jest-fetch-mock';
@@ -7,8 +7,6 @@ import usersJson from './mocks/users.json';
 import userJson from './mocks/user.json';
 import { HttpAuthorizationException, HttpClientException, HttpException, HttpServerException } from '../src/exceptions';
 import { HttpStatus } from '../src/statuses';
-
-const token = process.env.TEST_API_TOKEN;
 
 interface User {
   id?: number;
@@ -26,7 +24,7 @@ const newUser: User = {
 }
 
 @Http('https://test.com/api/v1')
-@Header(HttpHeader.Authorization, `Bearer ${token}`)
+@Header(HttpHeader.Authorization, 'Bearer gh5tyr67sdd567o9s5s=')
 @Header(HttpHeader.ContentType, 'application/json')
 class API {
   @Get('users')
@@ -56,6 +54,7 @@ class API {
   }
 
   @Post('users')
+  @RequestHeader(HttpHeader.ContentType, 'application/json')
   public async createUser(@Body() user?: User, @Response(HttpResponseType.Json) response?: JSONObject): Promise<User> {
     return response as unknown as User;
   }
@@ -87,13 +86,12 @@ describe('API Client', () => {
 
     const users = await api.getUsers();
     const url = getFetchUrl(fetchMock);
-    const options = getFetchOptions(fetchMock);
-    const headers: Dictionary<string> = options.headers as Dictionary<string>;
+    const options = getFetchOptions(fetchMock);    
 
     expect(url).toBe('https://test.com/api/v1/users');
     expect(options.method).toBe('GET');
-    expect(headers[HttpHeader.ContentType]).toBe('application/json');
-    expect(headers[HttpHeader.Authorization]).toBe(`Bearer ${token}`);
+    expect(getHeader(options, HttpHeader.ContentType)).toBe('application/json');
+    expect(getHeader(options, HttpHeader.Authorization)).toBe('Bearer gh5tyr67sdd567o9s5s=');
     expect(users.length).toBe(10);
   });
 
@@ -197,9 +195,11 @@ describe('API Client', () => {
     const user = await api.createUser(userJson as User);
     const url = getFetchUrl(fetchMock);
     const options = getFetchOptions(fetchMock);
-
+    
     expect(url).toBe('https://test.com/api/v1/users');
     expect(options.method).toBe('POST');
+    expect(getHeader(options, HttpHeader.ContentType)).toBe('application/json');
+
     expect(user.id).toBe(9999);
     expect(user.name).toBe(newUser.name);
   });
@@ -268,4 +268,9 @@ function getFetchUrl(fetchMock: FetchMock, callIndex: number = 0): string {
 
 function getFetchOptions(fetchMock: FetchMock): JSONObject {
   return fetchMock.mock.calls[0][1] as JSONObject;
+}
+
+function getHeader(options: JSONObject, name: string): string {
+  const headers: Dictionary<string> = options.headers as Dictionary<string>;
+  return headers[name];
 }

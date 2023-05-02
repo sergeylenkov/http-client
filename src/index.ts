@@ -15,7 +15,7 @@ import {
   isRedirection,
   HttpStatus,
 } from './statuses';
-import { Http, Get, Post, Delete, Patch, Response, Body, Query, Param, Header, Cache } from './decorators';
+import { Http, Get, Post, Delete, Patch, Response, Body, Query, Param, Header, Cache, RequestHeader } from './decorators';
 import { Dictionary, JSONObject, HttpResponseType } from './types';
 import { HttpHeader } from './headers';
 export {
@@ -46,5 +46,6 @@ export {
   Dictionary,
   JSONObject,
   HttpResponseType,
-  HttpHeader
+  HttpHeader,
+  RequestHeader
 };
